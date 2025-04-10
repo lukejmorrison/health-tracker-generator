@@ -1,5 +1,6 @@
 @echo off
 REM Batch script to set up environment and run the health tracker generator
+REM Updated to ensure requirements are checked/installed even if venv exists.
 
 REM Define the virtual environment directory name
 set VENV_DIR=venv
@@ -24,35 +25,31 @@ if not exist "%VENV_DIR%\" (
         pause
         exit /b 1
     )
-
-    echo Activating environment and installing requirements...
-    REM Use 'call' to run the activate script and return control here
-    call "%VENV_DIR%\Scripts\activate.bat"
-    if %errorlevel% neq 0 (
-        echo Error: Failed to activate virtual environment using activate.bat.
-        pause
-        exit /b 1
-    )
-
-    echo Installing packages: %REQUIREMENTS%...
-    pip install %REQUIREMENTS%
-    if %errorlevel% neq 0 (
-        echo Error: Failed to install required Python packages.
-        pause
-        exit /b 1
-    )
-    echo Requirements installed successfully.
+    echo Virtual environment created.
 ) else (
-    echo Found existing virtual environment. Activating...
-    REM Activate existing environment
-    call "%VENV_DIR%\Scripts\activate.bat"
-     if %errorlevel% neq 0 (
-        echo Error: Failed to activate existing virtual environment using activate.bat.
-        pause
-        exit /b 1
-    )
+    echo Found existing virtual environment.
 )
 
+REM Activate the environment (works for both new and existing venv)
+echo Activating environment...
+call "%VENV_DIR%\Scripts\activate.bat"
+if %errorlevel% neq 0 (
+    echo Error: Failed to activate virtual environment using activate.bat.
+    pause
+    exit /b 1
+)
+
+REM Ensure requirements are installed (pip will handle existing packages)
+echo Ensuring required packages are installed: %REQUIREMENTS%...
+pip install %REQUIREMENTS%
+if %errorlevel% neq 0 (
+    echo Error: Failed to install/verify required Python packages.
+    pause
+    exit /b 1
+)
+echo Requirements checked/installed successfully.
+
+REM Run the Python script
 echo Running the Python script (generate_tracker.py)...
 python generate_tracker.py
 if %errorlevel% neq 0 (
